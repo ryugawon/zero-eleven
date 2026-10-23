@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="740" viewBox="0 0 1200 740" role="img" aria-labelledby="title desc">
+  <title id="title">패스 순간과 오프사이드 기준선을 표현한 자체 제작 전술 이미지</title>
+  <desc id="desc">검정 바탕의 축구장 위에 노란 공격수와 흰 수비수, 빨간 판정선, 화살표로 패스의 흐름을 표현한 비상업적 학습 도식입니다.</desc>
+  <defs>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M42 0H0V42" fill="none" stroke="#3a4242" stroke-width="1" opacity=".5"/></pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="15" /></filter>
+  </defs>
+  <rect width="1200" height="740" fill="#161a18" />
+  <rect width="1200" height="740" fill="url(#grid)" />
+  <circle cx="1020" cy="155" r="200" fill="#D62828" opacity=".14" filter="url(#glow)"/>
+  <rect x="72" y="65" width="1056" height="610" rx="12" fill="#193b2d" stroke="#d6f6da" stroke-width="4"/>
+  <path d="M600 65V675M72 370H1128M480 370a120 120 0 1 0 240 0a120 120 0 1 0 -240 0" fill="none" stroke="#cce2d0" stroke-width="3" opacity=".7"/>
+  <rect x="890" y="219" width="238" height="300" fill="none" stroke="#cce2d0" stroke-width="3" opacity=".7"/>
+  <rect x="1020" y="280" width="108" height="180" fill="none" stroke="#cce2d0" stroke-width="3" opacity=".7"/>
+  <path d="M770 68V674" stroke="#f44246" stroke-width="7" stroke-dasharray="17 15"/>
+  <rect x="787" y="91" width="254" height="49" rx="5" fill="#D62828"/>
+  <text x="803" y="126" fill="#fff" font-family="Arial,sans-serif" font-size="25" font-weight="800" letter-spacing="2">OFFSIDE LINE</text>
+  <g fill="#FFD43B" stroke="#111" stroke-width="5"><circle cx="400" cy="470" r="31"/><circle cx="860" cy="295" r="31"/><circle cx="350" cy="200" r="25"/></g>
+  <g fill="#e9f1ec" stroke="#141414" stroke-width="5"><circle cx="760" cy="250" r="27"/><circle cx="744" cy="460" r="27"/><circle cx="1002" cy="371" r="27"/></g>
+  <circle cx="432" cy="443" r="14" fill="#fff" stroke="#111" stroke-width="5"/>
+  <path d="M448 431Q620 342 825 300" fill="none" stroke="#FFD43B" stroke-width="11" stroke-linecap="round" stroke-dasharray="25 19"/>
+  <path d="m804 286 40 11-20 38" fill="none" stroke="#FFD43B" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="102" y="99" width="316" height="92" fill="#151515" rx="4"/>
+  <text x="120" y="135" fill="#FFD43B" font-family="Arial,sans-serif" font-size="19" font-weight="800" letter-spacing="4">PASS MOMENT</text>
+  <text x="120" y="172" fill="#fff" font-family="Arial,sans-serif" font-size="28" font-weight="800">PLAY THE MOMENT.</text>
+  <rect x="102" y="592" width="537" height="61" rx="7" fill="#151515"/>
+  <text x="120" y="634" fill="#fff" font-family="Arial,sans-serif" font-size="23" font-weight="800" letter-spacing="2">ZERO ELEVEN  /  TACTICAL STUDY</text>
+</svg>

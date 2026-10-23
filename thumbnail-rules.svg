@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" role="img" aria-labelledby="title desc">
+ <title id="title">축구 판정 규칙을 상징하는 옐로 카드·레드 카드 그래픽</title>
+ <desc id="desc">검은 배경에 노란 카드와 붉은 카드가 비스듬히 겹쳐 있는 학습 콘텐츠용 자체 제작 이미지입니다.</desc>
+ <rect width="900" height="540" fill="#191919"/>
+ <path d="M0 80H900M0 180H900M0 280H900M0 380H900M0 480H900" fill="none" stroke="#444" stroke-width="2"/>
+ <g transform="rotate(-13 365 280)"><rect x="218" y="86" width="290" height="370" rx="18" fill="#FFD43B"/><rect x="250" y="118" width="226" height="306" rx="8" stroke="#111" stroke-opacity=".2" fill="none" stroke-width="2"/></g>
+ <g transform="rotate(13 600 275)"><rect x="470" y="130" width="260" height="332" rx="18" fill="#D62828"/><rect x="500" y="162" width="200" height="268" rx="8" stroke="#fff" stroke-opacity=".3" fill="none" stroke-width="2"/></g>
+ <text x="55" y="504" font-family="Arial,sans-serif" font-size="32" font-weight="900" letter-spacing="6" fill="#fff">RULES CHANGE THE VIEW</text>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" role="img" aria-labelledby="title desc">
+ <title id="title">축구 경기장과 득점 순간을 추상화한 자체 제작 그래픽</title>
+ <desc id="desc">녹색 경기장 위에 노란 점선으로 표현한 슈팅 궤적과 흰색 골대가 그려져 있습니다.</desc>
+ <rect width="900" height="540" fill="#184733"/>
+ <g fill="none" stroke="#91b49b" stroke-width="3"><path d="M20 20h860v500H20z M450 20v500"/><circle cx="450" cy="270" r="100"/><rect x="690" y="100" width="190" height="340"/><rect x="810" y="185" width="70" height="170"/></g>
+ <g stroke="#FFD43B" fill="none" stroke-width="13" stroke-dasharray="28 20"><path d="M200 400Q440 320 828 272"/></g>
+ <circle cx="210" cy="400" r="35" fill="#FFD43B" stroke="#151515" stroke-width="8"/>
+ <circle cx="835" cy="271" r="24" fill="#fff" stroke="#151515" stroke-width="6"/>
+ <rect x="43" y="40" width="310" height="73" fill="#151515" rx="6"/>
+ <text x="65" y="85" font-family="Arial,sans-serif" font-size="34" font-weight="900" fill="#fff" letter-spacing="3">MATCH DAY</text>
+</svg>
