@@ -410,6 +410,21 @@ document.querySelectorAll('.quiz-stage').forEach(stage => {
 const canonical = document.querySelector('link[rel="canonical"]');
 if (canonical) canonical.href = window.location.origin + cleanPath;
 
+function measureAnchorHeader() {
+  const siteHeader = document.querySelector('.site-header');
+  if (!siteHeader) return;
+  const update = () => {
+    const style = getComputedStyle(siteHeader);
+    const sticky = ['sticky', 'fixed'].includes(style.position);
+    const height = sticky ? siteHeader.getBoundingClientRect().height + Math.max(0, parseFloat(style.top) || 0) : 0;
+    document.documentElement.style.setProperty('--scroll-header-height', `${height}px`);
+  };
+  update();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(siteHeader);
+  else window.addEventListener('resize', update);
+}
+measureAnchorHeader();
+
 // Use one document length for every route at the current viewport width.
 // Measure the existing content instead of clipping long pages or guessing a px height.
 function equalizePageLengths() {
@@ -418,6 +433,7 @@ function equalizePageLengths() {
   main.classList.add('site-main');
   let scheduled = false;
   let fontsReady = !document.fonts;
+  let initialAnchorPending = Boolean(window.location.hash);
 
   function update() {
     scheduled = false;
@@ -451,6 +467,15 @@ function equalizePageLengths() {
     const footerHeight = document.querySelector('.footer').getBoundingClientRect().height;
     const targetHeight = Math.ceil(sharedHeight);
     main.style.setProperty('--shared-main-height', `${targetHeight - headerSpace - footerHeight}px`);
+    // Initial browser fragment scrolling may precede fonts and equal-length layout.
+    // Re-align only that initial fragment after the final layout has settled.
+    if (fontsReady && initialAnchorPending) {
+      initialAnchorPending = false;
+      let id;
+      try { id = decodeURIComponent(window.location.hash.slice(1)); } catch { id = ''; }
+      const anchor = document.getElementById(id);
+      if (anchor) anchor.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
     document.body.dataset.pageHeight = String(targetHeight);
     document.body.dataset.pageHeightReady = String(fontsReady);
   }
