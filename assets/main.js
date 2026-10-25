@@ -229,7 +229,8 @@ function blog() {
   </main>${footer()}`;
 }
 function articleFigure(src, alt, number, title, caption) {
-  return `<figure class="article-figure"><div class="article-img"><img src="${src}" alt="${alt}" width="1200" height="740" loading="lazy"/></div><figcaption><div class="fig-head"><span>FIG. ${number} / ZERO ELEVEN ORIGINAL</span><b>${title}</b></div><p>${caption}</p></figcaption></figure>`;
+  const imageHeight = src.endsWith('goal-sequence.svg') ? 630 : 740;
+  return `<figure class="article-figure"><div class="article-img"><img src="${src}" alt="${alt}" width="1200" height="${imageHeight}" loading="lazy"/></div><figcaption><div class="fig-head"><span>FIG. ${number} / ZERO ELEVEN ORIGINAL</span><b>${title}</b></div><p>${caption}</p></figcaption></figure>`;
 }
 function article() {
   return `${header('article')}<main id="main"><article>
@@ -408,3 +409,61 @@ document.querySelectorAll('.quiz-stage').forEach(stage => {
 // Canonical is also updated at runtime, e.g. when previewing or uploading a static build.
 const canonical = document.querySelector('link[rel="canonical"]');
 if (canonical) canonical.href = window.location.origin + cleanPath;
+
+// Use one document length for every route at the current viewport width.
+// Measure the existing content instead of clipping long pages or guessing a px height.
+function equalizePageLengths() {
+  const main = document.querySelector('#main');
+  if (!main) return;
+  main.classList.add('site-main');
+  let scheduled = false;
+  let fontsReady = !document.fonts;
+
+  function update() {
+    scheduled = false;
+    const probe = document.createElement('div');
+    probe.className = 'page-length-probe';
+    probe.setAttribute('aria-hidden', 'true');
+    probe.inert = true;
+    probe.style.width = `${document.documentElement.clientWidth}px`;
+    document.body.append(probe);
+    const regularHeaderHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height'));
+    let sharedHeight = 0;
+
+    for (const pageKey of ['home', 'about', 'rules', 'review', 'highlights', 'blog', 'article']) {
+      const template = document.createElement('template');
+      template.innerHTML = pages[pageKey]();
+      const content = template.content.querySelector('main');
+      const pageFooter = template.content.querySelector('.footer');
+      // Reserve space for every FAQ answer, including answers opened after arrival.
+      content.querySelectorAll('details').forEach(detail => { detail.open = true; });
+      content.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+      content.removeAttribute('id');
+      probe.replaceChildren(content, pageFooter);
+      const headerSpace = pageKey === 'home' ? 0 : regularHeaderHeight;
+      sharedHeight = Math.max(sharedHeight, headerSpace + content.getBoundingClientRect().height + pageFooter.getBoundingClientRect().height);
+    }
+    probe.remove();
+
+    const siteHeader = document.querySelector('.site-header');
+    const headerPosition = getComputedStyle(siteHeader).position;
+    const headerSpace = ['absolute', 'fixed'].includes(headerPosition) ? 0 : siteHeader.getBoundingClientRect().height;
+    const footerHeight = document.querySelector('.footer').getBoundingClientRect().height;
+    const targetHeight = Math.ceil(sharedHeight);
+    main.style.setProperty('--shared-main-height', `${targetHeight - headerSpace - footerHeight}px`);
+    document.body.dataset.pageHeight = String(targetHeight);
+    document.body.dataset.pageHeightReady = String(fontsReady);
+  }
+
+  function schedule() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(update);
+  }
+
+  schedule();
+  window.addEventListener('resize', schedule);
+  window.addEventListener('load', schedule, { once: true });
+  if (document.fonts) document.fonts.ready.then(() => { fontsReady = true; schedule(); });
+}
+equalizePageLengths();
