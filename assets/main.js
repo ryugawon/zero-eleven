@@ -425,59 +425,35 @@ function measureAnchorHeader() {
 }
 measureAnchorHeader();
 
-// Use one document length for every route at the current viewport width.
-// Measure the existing content instead of clipping long pages or guessing a px height.
-function equalizePageLengths() {
+// Fit the page shell to the viewport. Preserve readable document flow when
+// the existing content cannot fit, and expose that conflict for verification.
+function setupViewportPage() {
   const main = document.querySelector('#main');
   if (!main) return;
-  main.classList.add('site-main');
+  const page = document.querySelector('#app');
+  const siteHeader = document.querySelector('.site-header');
+  const siteFooter = document.querySelector('.footer');
+  page.classList.add('page');
+  main.classList.add('page-content');
   let scheduled = false;
   let fontsReady = !document.fonts;
   let initialAnchorPending = Boolean(window.location.hash);
 
   function update() {
     scheduled = false;
-    const probe = document.createElement('div');
-    probe.className = 'page-length-probe';
-    probe.setAttribute('aria-hidden', 'true');
-    probe.inert = true;
-    probe.style.width = `${document.documentElement.clientWidth}px`;
-    document.body.append(probe);
-    const regularHeaderHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height'));
-    let sharedHeight = 0;
-
-    for (const pageKey of ['home', 'about', 'rules', 'review', 'highlights', 'blog', 'article']) {
-      const template = document.createElement('template');
-      template.innerHTML = pages[pageKey]();
-      const content = template.content.querySelector('main');
-      const pageFooter = template.content.querySelector('.footer');
-      // Reserve space for every FAQ answer, including answers opened after arrival.
-      content.querySelectorAll('details').forEach(detail => { detail.open = true; });
-      content.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
-      content.removeAttribute('id');
-      probe.replaceChildren(content, pageFooter);
-      const headerSpace = pageKey === 'home' ? 0 : regularHeaderHeight;
-      sharedHeight = Math.max(sharedHeight, headerSpace + content.getBoundingClientRect().height + pageFooter.getBoundingClientRect().height);
-    }
-    probe.remove();
-
-    const siteHeader = document.querySelector('.site-header');
-    const headerPosition = getComputedStyle(siteHeader).position;
-    const headerSpace = ['absolute', 'fixed'].includes(headerPosition) ? 0 : siteHeader.getBoundingClientRect().height;
-    const footerHeight = document.querySelector('.footer').getBoundingClientRect().height;
-    const targetHeight = Math.ceil(sharedHeight);
-    main.style.setProperty('--shared-main-height', `${targetHeight - headerSpace - footerHeight}px`);
-    // Initial browser fragment scrolling may precede fonts and equal-length layout.
-    // Re-align only that initial fragment after the final layout has settled.
+    page.dataset.viewportFit = 'measuring';
+    const available = Math.max(0, window.innerHeight - siteHeader.getBoundingClientRect().height - siteFooter.getBoundingClientRect().height);
+    const needed = main.scrollHeight;
+    const fits = needed <= available + 1 && siteHeader.getBoundingClientRect().height + siteFooter.getBoundingClientRect().height <= window.innerHeight + 1;
+    page.dataset.viewportFit = fits ? 'fits' : 'content-conflict';
+    page.dataset.requiredHeight = String(Math.ceil(needed + siteHeader.getBoundingClientRect().height + siteFooter.getBoundingClientRect().height));
     if (fontsReady && initialAnchorPending) {
       initialAnchorPending = false;
       let id;
       try { id = decodeURIComponent(window.location.hash.slice(1)); } catch { id = ''; }
-      const anchor = document.getElementById(id);
-      if (anchor) anchor.scrollIntoView({ block: 'start', behavior: 'instant' });
+      document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' });
     }
-    document.body.dataset.pageHeight = String(targetHeight);
-    document.body.dataset.pageHeightReady = String(fontsReady);
+    document.body.dataset.viewportReady = String(fontsReady);
   }
 
   function schedule() {
@@ -489,6 +465,9 @@ function equalizePageLengths() {
   schedule();
   window.addEventListener('resize', schedule);
   window.addEventListener('load', schedule, { once: true });
+  main.addEventListener('load', schedule, true);
+  main.addEventListener('toggle', schedule, true);
+  main.addEventListener('click', schedule);
   if (document.fonts) document.fonts.ready.then(() => { fontsReady = true; schedule(); });
 }
-equalizePageLengths();
+setupViewportPage();
