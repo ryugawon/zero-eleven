@@ -9,11 +9,21 @@ const FIFA_VIDEOS_URL = 'https://www.youtube.com/@fifa/videos';
 const disclaimer = '본 페이지는 수업 실습을 위해 제작한 학습용 기획물입니다. 공식 대회·협회·선수의 운영 페이지가 아닙니다.';
 
 const routes = [
-  { label: 'BRAND', href: '/about', key: 'about' },
-  { label: 'RULES', href: '/rules', key: 'rules' },
-  { label: 'GAME', href: '/review', key: 'review' },
-  { label: 'HIGHLIGHTS', href: '/highlights', key: 'highlights' },
-  { label: 'BLOG', href: '/blog', key: 'blog' },
+  { label: 'BRAND', href: '/about', key: 'about', sections: [
+    ['브랜드 스토리', '/about#brand-story'], ['우리가 배우는 방법', '/about#our-method'], ['이름에 담긴 의미', '/about#the-name']
+  ] },
+  { label: 'RULES', href: '/rules', key: 'rules', sections: [
+    ['기본 규칙 3가지', '/rules#rule-book'], ['오프사이드 가이드', '/rules#offside-guide'], ['공식 규칙과 출처', '/rules#official-rules']
+  ] },
+  { label: 'GAME', href: '/review', key: 'review', sections: [
+    ['GOAL / NO GOAL 판정 게임', '/review#decision-room'], ['판정의 이유 알아보기', '/review#decision-guide']
+  ] },
+  { label: 'HIGHLIGHTS', href: '/highlights', key: 'highlights', sections: [
+    ['득점과 패스의 순간', '/highlights#watch-goal'], ['VAR 관전 포인트', '/highlights#watch-var'], ['규칙으로 경기 읽기', '/highlights#watch-rules']
+  ] },
+  { label: 'BLOG', href: '/blog', key: 'blog', sections: [
+    ['최신 글 모아보기', '/blog#latest-story'], ['오프사이드로 골이 취소되는 이유', '/blog/offside-goal']
+  ] },
 ];
 
 const scenarios = [
@@ -83,15 +93,17 @@ function eyebrow(index, title, inverse = false) {
   return `<div class="eyebrow ${inverse ? 'eyebrow-inverse' : ''}"><span class="eyebrow-line"></span><span>${index} &nbsp;/&nbsp; ${title}</span></div>`;
 }
 function header(key) {
+  const current = r => r.key === key || (key === 'article' && r.key === 'blog');
+  const submenu = r => r.sections.map(([label, href]) => `<a href="${href}">${label}<span aria-hidden="true">↗</span></a>`).join('');
   return `<a class="skip-link" href="#main">본문 바로가기</a>
   <header class="site-header" id="siteHeader">
     <div class="topline"><span>ZERO ELEVEN / THE FOOTBALL PLAYBOOK</span><span class="topline-right"><i class="live-dot"></i> LEARN THE RULE. LOVE THE GAME.</span></div>
     <div class="nav-wrap container-wide">
       <a class="brand" href="/" aria-label="ZERO ELEVEN 홈으로 이동"><span class="brand-symbol"><span></span><b>11</b></span><span class="brand-name">ZERO<span>ELEVEN</span></span></a>
-      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<a ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${r.key === key || (key === 'article' && r.key === 'blog') ? 'selected' : ''}">${r.label}</a>`).join('')}</nav>
+      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<div class="nav-group"><a ${current(r) ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${current(r) ? 'selected' : ''}">${r.label}<span class="nav-chevron" aria-hidden="true">⌄</span></a><div class="nav-dropdown" aria-label="${r.label} 소메뉴">${submenu(r)}</div></div>`).join('')}</nav>
       <div class="nav-actions">${outbound('FIFA YOUTUBE', 'nav-youtube', 'header', FIFA_URL)}<button type="button" class="menu-button" id="menuButton" aria-controls="mobileMenu" aria-expanded="false" aria-label="메뉴 열기"><span></span><span></span></button></div>
     </div>
-    <nav class="nav-mobile" id="mobileMenu" aria-label="모바일 메뉴" hidden>${routes.map(r => `<a href="${r.href}" ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''}>${r.label}<span>↗</span></a>`).join('')}</nav>
+    <nav class="nav-mobile" id="mobileMenu" aria-label="모바일 메뉴" hidden>${routes.map(r => `<div class="mobile-nav-group"><div class="mobile-nav-heading"><a href="${r.href}" ${current(r) ? 'aria-current="page"' : ''}>${r.label}</a><button type="button" class="submenu-toggle" data-submenu-toggle aria-label="${r.label} 소메뉴" aria-expanded="false" aria-controls="mobile-${r.key}"><span aria-hidden="true">⌄</span></button></div><div class="mobile-submenu" id="mobile-${r.key}" hidden>${submenu(r)}</div></div>`).join('')}</nav>
   </header>`;
 }
 function footer() {
@@ -210,7 +222,7 @@ function pageHero(index, kicker, title, text, variant = '') {
 }
 function blog() {
   return `${header('blog')}<main id="main">${pageHero('BLOG', 'ZERO ELEVEN BLOG', '축구를 더 재미있게 보는<br/><em>짧고 정확한 노트.</em>', '규칙이 어려웠던 순간을 쉬운 말과 그림으로 다시 설명합니다.', 'page-hero-yellow')}
-    <section class="blog-list-section"><div class="container-wide"><div class="list-heading"><div>${eyebrow('01','LATEST STORY')}<h2>NOW READING<span class="square-dot">■</span></h2></div><span>01 STORY / MORE COMING SOON</span></div>
+    <section class="blog-list-section" id="latest-story"><div class="container-wide"><div class="list-heading"><div>${eyebrow('01','LATEST STORY')}<h2>NOW READING<span class="square-dot">■</span></h2></div><span>01 STORY / MORE COMING SOON</span></div>
       <article class="featured-story"><a href="/blog/offside-goal" class="featured-image" aria-label="오프사이드 홍보 글 자세히 읽기"><img src="/assets/offside-cover.svg" alt="노란 공격수와 흰 수비수, 빨간 오프사이드 기준선을 보여 주는 ZERO ELEVEN 자체 제작 전술 이미지" width="1200" height="740" /><span class="featured-image-stamp">FEATURED / 01</span></a><div class="featured-details"><div class="story-meta"><span>RULES  /  OFFSIDE</span><span>2026.10.23  ·  5 MIN READ</span></div><h2><a href="/blog/offside-goal">골은 들어갔는데,<br/>득점은 무효?<br/><span>오프사이드로 골이 취소되는 이유</span></a></h2><p>선수가 앞에 있었다는 이유만으로 골을 취소하는 걸까? 패스 순간, 관여 여부, VAR까지 한 번에 정리했어.</p><a class="button button-black" href="/blog/offside-goal" data-event="blog_card_click">아티클 읽기 <span>↗</span></a></div></article>
       <div class="blog-bottom-message"><span>EVERY GOAL HAS A STORY.</span><p>한 편부터 제대로. 앞으로도 축구의 결정적 순간을 쉽게 풀어낼게.</p></div>
     </div></section>
@@ -240,32 +252,32 @@ function article() {
 }
 function about() {
  return `${header('about')}<main id="main">${pageHero('00','THIS IS ZERO ELEVEN','스코어는 그대로.<br/><em>보는 눈은 달라진다.</em>','한 장면을 더 오래 보게 만드는 축구 관전 가이드. 우리는 골 뒤에 숨은 판정의 이유를 이야기합니다.','page-hero-black')}
- <section class="about-statement"><div class="container-wide"><span>WHY WE EXIST / BRAND STORY</span><h2>경기는 <em>90분.</em><br/>궁금증은 <em>1초.</em></h2><div class="about-statement-row"><p>하이라이트를 보다가 누구나 한 번쯤 생각할 수 있어요. “분명 골인데, 왜 취소됐지?” ZERO ELEVEN은 바로 그 질문에서 출발한 학습용 브랜드 기획입니다.</p><p>규칙집을 처음부터 외우지 않아도 괜찮아요. 짧은 설명과 전술 보드, 직접 판정하는 게임을 통해 중요한 기준을 쉽고 정확하게 익힐 수 있도록 설계했어요.</p></div></div></section>
- <section class="about-values"><div class="container-wide">${sectionLead('01','OUR METHOD','보는 눈이 달라지는<br/><em>3개의 과정.</em>')}${actionCards()}</div></section>
- <section class="about-name"><div class="container-wide"><div>${eyebrow('02','THE NAME')}<h2>ZERO.<br/><span>ELEVEN.</span></h2></div><div><p><strong>ZERO</strong>는 골처럼 보였지만 인정되지 않은 순간을, <strong>ELEVEN</strong>은 경기장을 누비는 한 팀의 선수 11명을 의미합니다.</p><p>이 이름은 실제 경기 결과나 공인 캠페인을 뜻하지 않아요. 골 취소 이후에도 점수가 변하지 않는 가상 장면에서 출발한 ZERO ELEVEN만의 학습용 콘셉트입니다.</p><a href="/rules" class="button button-yellow">규칙 배우러 가기 <span>↗</span></a></div></div></section>
+ <section class="about-statement" id="brand-story"><div class="container-wide"><span>WHY WE EXIST / BRAND STORY</span><h2>경기는 <em>90분.</em><br/>궁금증은 <em>1초.</em></h2><div class="about-statement-row"><p>하이라이트를 보다가 누구나 한 번쯤 생각할 수 있어요. “분명 골인데, 왜 취소됐지?” ZERO ELEVEN은 바로 그 질문에서 출발한 학습용 브랜드 기획입니다.</p><p>규칙집을 처음부터 외우지 않아도 괜찮아요. 짧은 설명과 전술 보드, 직접 판정하는 게임을 통해 중요한 기준을 쉽고 정확하게 익힐 수 있도록 설계했어요.</p></div></div></section>
+ <section class="about-values" id="our-method"><div class="container-wide">${sectionLead('01','OUR METHOD','보는 눈이 달라지는<br/><em>3개의 과정.</em>')}${actionCards()}</div></section>
+ <section class="about-name" id="the-name"><div class="container-wide"><div>${eyebrow('02','THE NAME')}<h2>ZERO.<br/><span>ELEVEN.</span></h2></div><div><p><strong>ZERO</strong>는 골처럼 보였지만 인정되지 않은 순간을, <strong>ELEVEN</strong>은 경기장을 누비는 한 팀의 선수 11명을 의미합니다.</p><p>이 이름은 실제 경기 결과나 공인 캠페인을 뜻하지 않아요. 골 취소 이후에도 점수가 변하지 않는 가상 장면에서 출발한 ZERO ELEVEN만의 학습용 콘셉트입니다.</p><a href="/rules" class="button button-yellow">규칙 배우러 가기 <span>↗</span></a></div></div></section>
  <section class="about-disclaimer"><div class="container-wide"><span>ABOUT THIS PROJECT</span><h2>공식 대회 페이지가 아닙니다.</h2><p>${disclaimer} 실제 경기를 사칭하지 않고, 규칙 근거는 IFAB 공식 사이트와 연결합니다.</p></div></section>
  </main>${footer()}`;
 }
 function rules() {
  return `${header('rules')}<main id="main">${pageHero('01','THE RULE BOOK','축구 규칙,<br/><em>알고 보면 쉽다.</em>','오프사이드부터 비디오 판독까지. 경기장 위에서 벌어지는 중요한 판정 기준을 쉽고 정확하게 정리했어요.','page-hero-black')}
- <section class="rules-page-body"><div class="container-wide">${sectionLead('01','THREE RULES TO KNOW','판정의 순간을 읽는<br/><em>기본 규칙 3가지.</em>')}${rulesTabs()}</div></section>
- <section class="rules-explainer"><div class="container-wide"><div>${eyebrow('02','START WITH OFFSIDE')}<h2>오프사이드는<br/><em>언제 반칙일까?</em></h2><p>많이 헷갈리는 오프사이드는 세 가지를 연결하면 이해하기 쉬워요. 동료가 공을 플레이한 순간 → 당시 위치 → 이후 관여 여부.</p><a href="/blog/offside-goal" class="button button-black">블로그에서 더 자세히 <span>↗</span></a></div><img src="/assets/offside-cover.svg" alt="패스 순간과 오프사이드 기준선을 나타내는 ZERO ELEVEN 자체 제작 축구장 도식" loading="lazy" width="1200" height="740" /></div></section>
- <section class="rules-official"><div class="container-wide"><span>THE SOURCE MATTERS.</span><h2>확실한 규칙은<br/>공식 문서에서.</h2><div class="official-cards"><a href="${OFFSIDE_URL}" target="_blank" rel="noopener noreferrer"><span>LAW 11</span><strong>OFFSIDE</strong><span>원문 보기 ↗</span></a><a href="${VAR_URL}" target="_blank" rel="noopener noreferrer"><span>PROTOCOL</span><strong>VAR</strong><span>원문 보기 ↗</span></a><a href="${FOUL_URL}" target="_blank" rel="noopener noreferrer"><span>LAW 12</span><strong>FOULS</strong><span>원문 보기 ↗</span></a></div></div></section>
+ <section class="rules-page-body" id="rule-book"><div class="container-wide">${sectionLead('01','THREE RULES TO KNOW','판정의 순간을 읽는<br/><em>기본 규칙 3가지.</em>')}${rulesTabs()}</div></section>
+ <section class="rules-explainer" id="offside-guide"><div class="container-wide"><div>${eyebrow('02','START WITH OFFSIDE')}<h2>오프사이드는<br/><em>언제 반칙일까?</em></h2><p>많이 헷갈리는 오프사이드는 세 가지를 연결하면 이해하기 쉬워요. 동료가 공을 플레이한 순간 → 당시 위치 → 이후 관여 여부.</p><a href="/blog/offside-goal" class="button button-black">블로그에서 더 자세히 <span>↗</span></a></div><img src="/assets/offside-cover.svg" alt="패스 순간과 오프사이드 기준선을 나타내는 ZERO ELEVEN 자체 제작 축구장 도식" loading="lazy" width="1200" height="740" /></div></section>
+ <section class="rules-official" id="official-rules"><div class="container-wide"><span>THE SOURCE MATTERS.</span><h2>확실한 규칙은<br/>공식 문서에서.</h2><div class="official-cards"><a href="${OFFSIDE_URL}" target="_blank" rel="noopener noreferrer"><span>LAW 11</span><strong>OFFSIDE</strong><span>원문 보기 ↗</span></a><a href="${VAR_URL}" target="_blank" rel="noopener noreferrer"><span>PROTOCOL</span><strong>VAR</strong><span>원문 보기 ↗</span></a><a href="${FOUL_URL}" target="_blank" rel="noopener noreferrer"><span>LAW 12</span><strong>FOULS</strong><span>원문 보기 ↗</span></a></div></div></section>
  <section class="mid-cta"><div class="container-wide"><h2>이제 <em>판정해 볼까?</em></h2><a href="/review" class="button button-yellow">GOAL / NO GOAL 도전하기 <span>↗</span></a></div></section>
  </main>${footer()}`;
 }
 function review() {
  return `${header('review')}<main id="main">${pageHero('02','GOAL CHECKER','당신이 심판이라면,<br/><em>GOAL or NO GOAL?</em>','총 3가지 가상 장면. 규칙을 확인했다면 이제 직접 판정해 볼 차례. 정답 뒤에는 공식 규칙에 따른 해설이 나옵니다.','page-hero-red')}
-  <section class="review-main"><div class="container-wide"><div class="review-header"><div>${eyebrow('01','THE DECISION ROOM')}<h2>MAKE THE CALL<span>.</span></h2></div><p>정답은 선택한 뒤에 나타나. <br/>한 문제씩 천천히 판단해 봐.</p></div>${renderQuiz('full')}<div class="review-bottom"><span>ALL CASES ARE FICTIONAL. / FOR LEARNING ONLY.</span><a href="${OFFSIDE_URL}" target="_blank" rel="noopener noreferrer">IFAB 경기규칙 제11조 확인 ↗</a></div></div></section>
- <section class="review-more"><div class="container-wide"><div>${eyebrow('02','KNOW THE WHY')}<h2>답보다 중요한 건<br/><em>판정의 이유.</em></h2><p>왜 그 장면이 오프사이드인지, 왜 골이 인정되는지 더 자세히 알고 싶다면.</p></div><a href="/blog/offside-goal" class="button button-black">오프사이드 글 읽기 <span>↗</span></a></div></section>
+  <section class="review-main" id="decision-room"><div class="container-wide"><div class="review-header"><div>${eyebrow('01','THE DECISION ROOM')}<h2>MAKE THE CALL<span>.</span></h2></div><p>정답은 선택한 뒤에 나타나. <br/>한 문제씩 천천히 판단해 봐.</p></div>${renderQuiz('full')}<div class="review-bottom"><span>ALL CASES ARE FICTIONAL. / FOR LEARNING ONLY.</span><a href="${OFFSIDE_URL}" target="_blank" rel="noopener noreferrer">IFAB 경기규칙 제11조 확인 ↗</a></div></div></section>
+ <section class="review-more" id="decision-guide"><div class="container-wide"><div>${eyebrow('02','KNOW THE WHY')}<h2>답보다 중요한 건<br/><em>판정의 이유.</em></h2><p>왜 그 장면이 오프사이드인지, 왜 골이 인정되는지 더 자세히 알고 싶다면.</p></div><a href="/blog/offside-goal" class="button button-black">오프사이드 글 읽기 <span>↗</span></a></div></section>
  </main>${footer()}`;
 }
 function highlights() {
  return `${header('highlights')}<main id="main">${pageHero('03','WATCH DIFFERENTLY','다르게 보면,<br/><em>다른 장면이 보인다.</em>','실제 경기 영상은 FIFA 공식 채널에서 확인하세요. 아래 카드는 하이라이트를 보면서 찾아볼 관전 포인트를 소개하는 ZERO ELEVEN의 자체 제작 이미지입니다.','page-hero-yellow')}
  <section class="highlight-page-list"><div class="container-wide">${sectionLead('01','WATCH LIST','하이라이트를 읽는<br/><em>3가지 관전 포인트.</em>')}
- <div class="watch-card-list"><article class="watch-card"><div class="watch-image"><img src="/assets/thumbnail-match.svg" alt="공이 골문을 향해 이동하는 장면을 추상화한 ZERO ELEVEN 자체 제작 경기장 일러스트" width="900" height="540" loading="lazy"/><span>WATCH POINT 01</span></div><div><span class="watch-kicker">GOAL / NO GOAL</span><h3>득점 직전,<br/>패스의 순간을 보자.</h3><p>골만 보는 대신 패스가 이뤄지는 순간과 공격수의 위치를 함께 확인해 봐. FIFA 공식 채널에서 실제 하이라이트를 볼 수 있어.</p>${outbound('FIFA 공식 영상 모아보기', 'watch-link', 'highlights', FIFA_VIDEOS_URL)}</div></article>
- <article class="watch-card"><div class="watch-image"><img src="/assets/thumbnail-var.svg" alt="모니터에 VAR이라는 글자가 표시된 ZERO ELEVEN 자체 제작 비디오 판독 이미지" width="900" height="540" loading="lazy"/><span>WATCH POINT 02</span></div><div><span class="watch-kicker">VIDEO REVIEW</span><h3>리플레이가 나올 때,<br/>무엇을 확인할까?</h3><p>비디오 판독 장면에서는 골 인정 여부와 반칙이 있었던 순간을 다시 떠올려 봐. VAR의 역할은 IFAB 공식 규정으로 이해할 수 있어.</p><a href="${VAR_URL}" target="_blank" rel="noopener noreferrer" class="watch-link">IFAB VAR 규정 확인하기 <span>↗</span></a></div></article>
- <article class="watch-card"><div class="watch-image"><img src="/assets/thumbnail-rules.svg" alt="노란 카드와 빨간 카드가 겹쳐 있는 ZERO ELEVEN 자체 제작 카드 이미지" width="900" height="540" loading="lazy"/><span>WATCH POINT 03</span></div><div><span class="watch-kicker">READ THE RULES</span><h3>판정 이유를 알면,<br/>경기가 더 재밌어진다.</h3><p>영상 시청 전 오프사이드·접촉 반칙·VAR 규정을 간단히 익히고, 실제 장면과 연결해 보자.</p><a href="/rules" class="watch-link">규칙 배우러 가기 <span>↗</span></a></div></article></div>
+ <div class="watch-card-list"><article class="watch-card" id="watch-goal"><div class="watch-image"><img src="/assets/thumbnail-match.svg" alt="공이 골문을 향해 이동하는 장면을 추상화한 ZERO ELEVEN 자체 제작 경기장 일러스트" width="900" height="540" loading="lazy"/><span>WATCH POINT 01</span></div><div><span class="watch-kicker">GOAL / NO GOAL</span><h3>득점 직전,<br/>패스의 순간을 보자.</h3><p>골만 보는 대신 패스가 이뤄지는 순간과 공격수의 위치를 함께 확인해 봐. FIFA 공식 채널에서 실제 하이라이트를 볼 수 있어.</p>${outbound('FIFA 공식 영상 모아보기', 'watch-link', 'highlights', FIFA_VIDEOS_URL)}</div></article>
+ <article class="watch-card" id="watch-var"><div class="watch-image"><img src="/assets/thumbnail-var.svg" alt="모니터에 VAR이라는 글자가 표시된 ZERO ELEVEN 자체 제작 비디오 판독 이미지" width="900" height="540" loading="lazy"/><span>WATCH POINT 02</span></div><div><span class="watch-kicker">VIDEO REVIEW</span><h3>리플레이가 나올 때,<br/>무엇을 확인할까?</h3><p>비디오 판독 장면에서는 골 인정 여부와 반칙이 있었던 순간을 다시 떠올려 봐. VAR의 역할은 IFAB 공식 규정으로 이해할 수 있어.</p><a href="${VAR_URL}" target="_blank" rel="noopener noreferrer" class="watch-link">IFAB VAR 규정 확인하기 <span>↗</span></a></div></article>
+ <article class="watch-card" id="watch-rules"><div class="watch-image"><img src="/assets/thumbnail-rules.svg" alt="노란 카드와 빨간 카드가 겹쳐 있는 ZERO ELEVEN 자체 제작 카드 이미지" width="900" height="540" loading="lazy"/><span>WATCH POINT 03</span></div><div><span class="watch-kicker">READ THE RULES</span><h3>판정 이유를 알면,<br/>경기가 더 재밌어진다.</h3><p>영상 시청 전 오프사이드·접촉 반칙·VAR 규정을 간단히 익히고, 실제 장면과 연결해 보자.</p><a href="/rules" class="watch-link">규칙 배우러 가기 <span>↗</span></a></div></article></div>
  <p class="highlight-disclaimer">※ 위 그림은 영상 썸네일이나 실제 경기 사진이 아닌 ZERO ELEVEN 자체 제작 그래픽입니다. 특정 경기 장면이나 공식 영상 제목을 사칭하지 않습니다.</p></div></section>
  ${finalYouTubeCta()}
  </main>${footer()}`;
@@ -278,9 +290,40 @@ function notFound() {
 // Select the page from the requested URL instead of the shared HTML template.
 const cleanPath = window.location.pathname.replace(/\/+$/, '') || '/';
 const key = cleanPath === '/' ? 'home' : cleanPath === '/blog' ? 'blog' : cleanPath === '/blog/offside-goal' ? 'article' : cleanPath === '/rules' ? 'rules' : cleanPath === '/review' ? 'review' : cleanPath === '/about' ? 'about' : cleanPath === '/highlights' ? 'highlights' : '404';
+// Keep home-only header styling on the home page after Vercel rewrites.
+document.body.dataset.route = cleanPath;
 const pages = { home, blog, article, rules, review, about, highlights, '404': notFound };
 const app = document.querySelector('#app');
 app.innerHTML = pages[key]();
+
+document.querySelectorAll('[data-submenu-toggle]').forEach(button => {
+  button.addEventListener('click', () => {
+    const submenu = document.getElementById(button.getAttribute('aria-controls'));
+    submenu.hidden = !submenu.hidden;
+    button.setAttribute('aria-expanded', String(!submenu.hidden));
+  });
+});
+
+document.querySelectorAll('.nav-mobile a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById('mobileMenu').hidden = true;
+    document.getElementById('menuButton').setAttribute('aria-expanded', 'false');
+    document.getElementById('menuButton').setAttribute('aria-label', '메뉴 열기');
+  });
+});
+
+document.querySelectorAll('.nav-group').forEach(group => {
+  group.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      group.classList.add('submenu-dismissed');
+      group.querySelector('.nav-link').focus();
+    }
+  });
+  group.addEventListener('pointerenter', () => group.classList.remove('submenu-dismissed'));
+  group.addEventListener('focusout', event => {
+    if (!group.contains(event.relatedTarget)) group.classList.remove('submenu-dismissed');
+  });
+});
 
 document.querySelectorAll('[data-event]').forEach(el => {
   el.addEventListener('click', () => {
