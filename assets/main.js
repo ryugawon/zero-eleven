@@ -274,7 +274,9 @@ function notFound() {
  return `${header('home')}<main id="main"><section class="not-found"><div class="container-wide"><p>404 / NOT FOUND</p><h1>이 페이지는<br/><em>오프사이드.</em></h1><p>찾는 페이지가 없어. 메인으로 돌아가서 다시 시작해 볼까?</p><a href="/" class="button button-yellow">메인으로 돌아가기 <span>↗</span></a></div></section></main>${footer()}`;
 }
 
-const cleanPath = (document.body.dataset.route || window.location.pathname).replace(/\/+$/, '') || '/';
+// Vercel serves index.html for every page, so its data-route is always '/'.
+// Select the page from the requested URL instead of the shared HTML template.
+const cleanPath = window.location.pathname.replace(/\/+$/, '') || '/';
 const key = cleanPath === '/' ? 'home' : cleanPath === '/blog' ? 'blog' : cleanPath === '/blog/offside-goal' ? 'article' : cleanPath === '/rules' ? 'rules' : cleanPath === '/review' ? 'review' : cleanPath === '/about' ? 'about' : cleanPath === '/highlights' ? 'highlights' : '404';
 const pages = { home, blog, article, rules, review, about, highlights, '404': notFound };
 const app = document.querySelector('#app');
