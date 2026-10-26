@@ -8,18 +8,19 @@ const source = fs.readFileSync(path.join(__dirname, '../assets/main.js'), 'utf8'
 const template = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const templateRoute = template.match(/data-route="([^"]*)"/)[1];
 
-function render(pathname) {
+function render(pathname, withRoute = false) {
   const app = { innerHTML: '' };
+  const body = { dataset: { route: templateRoute } };
   vm.runInNewContext(source, {
     window: { location: { pathname, origin: 'https://example.com' } },
     document: {
-      body: { dataset: { route: templateRoute } },
+      body,
       querySelector: selector => selector === '#app' ? app : null,
       querySelectorAll: () => [],
       getElementById: () => null,
     },
   });
-  return app.innerHTML;
+  return withRoute ? { html: app.innerHTML, route: body.dataset.route } : app.innerHTML;
 }
 
 const pages = {
@@ -51,4 +52,31 @@ for (const [url, marker] of Object.entries(pages)) {
 
 test('unknown paths display the missing-page screen', () => {
   assert.ok(render('/missing-page').includes('404 / NOT FOUND'));
+});
+
+test('shared HTML applies per-page route before page render', () => {
+  for (const url of Object.keys(pages)) {
+    assert.equal(render(url, true).route, url);
+  }
+  assert.equal(render('/about/', true).route, '/about');
+});
+
+test('ABOUT has one video CTA after the process cards with both official links', () => {
+  const html = render('/about');
+  const start = html.indexOf('class="about-values"');
+  const cta = html.indexOf('class="about-video-cta"');
+  const end = html.indexOf('class="about-name"');
+  assert.ok(start >= 0 && start < cta && cta < end);
+  assert.match(html, /FIFA 공식 하이라이트 보러 가기/);
+  assert.equal((html.match(/class="about-video-cta"/g) || []).length, 1);
+  assert.equal((html.match(/href="https:\/\/www\.youtube\.com\/@fifa\/videos"/g) || []).length, 2);
+});
+
+test('HOME-specific layout styles are isolated from other routes', () => {
+  assert.equal(render('/', true).route, '/');
+  assert.equal(render('/about', true).route, '/about');
+  assert.equal(render('/rules', true).route, '/rules');
+  assert.equal(render('/review', true).route, '/review');
+  assert.equal(render('/highlights', true).route, '/highlights');
+  assert.equal(render('/blog', true).route, '/blog');
 });
