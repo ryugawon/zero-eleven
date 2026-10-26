@@ -296,6 +296,7 @@ document.body.dataset.route = cleanPath;
 const pages = { home, blog, article, rules, review, about, highlights, '404': notFound };
 const app = document.querySelector('#app');
 app.innerHTML = pages[key]();
+let screenLayout = null;
 
 document.querySelectorAll('[data-submenu-toggle]').forEach(button => {
   button.addEventListener('click', () => {
@@ -355,6 +356,7 @@ document.querySelectorAll('[data-rules-tabs]').forEach(wrapper => {
   wrapper.addEventListener('click', ev => {
     const tab = ev.target.closest('[data-tab]');
     if (!tab) return;
+    screenLayout?.restore();
     const category = tab.dataset.tab;
     wrapper.querySelectorAll('[data-tab]').forEach(t => {
       const active = t.dataset.tab === category;
@@ -367,11 +369,14 @@ document.querySelectorAll('[data-rules-tabs]').forEach(wrapper => {
       p.classList.toggle('active', active);
     });
     track('rule_tab_click', { rule_type: category, page_path: cleanPath });
+    screenLayout?.refresh(tab);
   });
 });
 
 document.querySelectorAll('.quiz-stage').forEach(stage => {
   stage.addEventListener('click', ev => {
+    if (!ev.target.closest('[data-answer],[data-next]')) return;
+    screenLayout?.restore();
     const answer = ev.target.closest('[data-answer]');
     if (answer) {
       const mode = stage.dataset.mode;
@@ -393,7 +398,8 @@ document.querySelectorAll('.quiz-stage').forEach(stage => {
       });
       track('decision_submit', { question_id: q.id, selected_answer: chosen, is_correct: correct, page_path: cleanPath });
       track('decision_result_view', { question_id: q.id, result_type: correct ? 'correct' : 'incorrect', page_path: cleanPath });
-      result.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+      screenLayout?.refresh(result);
+      (result.querySelector('.screen-panel') || result.closest('.screen-panel') || result).scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       return;
     }
     const next = ev.target.closest('[data-next]');
@@ -401,7 +407,8 @@ document.querySelectorAll('.quiz-stage').forEach(stage => {
       const current = Number(stage.dataset.index);
       stage.dataset.index = String((current + 1) % scenarios.length);
       stage.innerHTML = quizLayout('full', Number(stage.dataset.index));
-      stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      screenLayout?.refresh(stage);
+      (stage.querySelector('.screen-panel') || stage.closest('.screen-panel') || stage).scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 });
@@ -417,7 +424,11 @@ function measureAnchorHeader() {
     const style = getComputedStyle(siteHeader);
     const sticky = ['sticky', 'fixed'].includes(style.position);
     const height = sticky ? siteHeader.getBoundingClientRect().height + Math.max(0, parseFloat(style.top) || 0) : 0;
-    document.documentElement.style.setProperty('--scroll-header-height', `${height}px`);
+    const value = `${height}px`;
+    if (document.documentElement.style.getPropertyValue('--scroll-header-height') !== value) {
+      document.documentElement.style.setProperty('--scroll-header-height', value);
+      screenLayout?.schedule();
+    }
   };
   update();
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(update).observe(siteHeader);
@@ -425,49 +436,206 @@ function measureAnchorHeader() {
 }
 measureAnchorHeader();
 
-// Fit the page shell to the viewport. Preserve readable document flow when
-// the existing content cannot fit, and expose that conflict for verification.
-function setupViewportPage() {
+// Each scroll scene occupies one screen. Existing nodes are moved, never
+// summarized or discarded, so links, tabs, quizzes, and reading order survive.
+function setupScreenScenes() {
   const main = document.querySelector('#main');
-  if (!main) return;
-  const page = document.querySelector('#app');
-  const siteHeader = document.querySelector('.site-header');
-  const siteFooter = document.querySelector('.footer');
-  page.classList.add('page');
-  main.classList.add('page-content');
+  if (!main) return null;
+  const footer = document.querySelector('.footer');
+  const headerElement = document.querySelector('.site-header');
+  const records = new Map();
+  const changedClasses = new Map();
+  const movedIds = new Map();
   let scheduled = false;
-  let fontsReady = !document.fonts;
-  let initialAnchorPending = Boolean(window.location.hash);
+  let pendingTarget = null;
+  let running = false;
+  let firstLayout = true;
+  let panels = [];
 
-  function update() {
-    scheduled = false;
-    page.dataset.viewportFit = 'measuring';
-    const available = Math.max(0, window.innerHeight - siteHeader.getBoundingClientRect().height - siteFooter.getBoundingClientRect().height);
-    const needed = main.scrollHeight;
-    const fits = needed <= available + 1 && siteHeader.getBoundingClientRect().height + siteFooter.getBoundingClientRect().height <= window.innerHeight + 1;
-    page.dataset.viewportFit = fits ? 'fits' : 'content-conflict';
-    page.dataset.requiredHeight = String(Math.ceil(needed + siteHeader.getBoundingClientRect().height + siteFooter.getBoundingClientRect().height));
-    if (fontsReady && initialAnchorPending) {
-      initialAnchorPending = false;
-      let id;
-      try { id = decodeURIComponent(window.location.hash.slice(1)); } catch { id = ''; }
-      document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  function remember(node) {
+    if (!records.has(node)) records.set(node, [...node.childNodes]);
+    if (!changedClasses.has(node)) changedClasses.set(node, node.className);
+  }
+
+  function restore() {
+    for (const [node, children] of [...records].reverse()) node.replaceChildren(...children);
+    for (const [node, classes] of changedClasses) {
+      node.className = classes;
+      delete node.dataset.density;
     }
-    document.body.dataset.viewportReady = String(fontsReady);
+    for (const [node, id] of movedIds) node.id = id;
+    records.clear();
+    changedClasses.clear();
+    movedIds.clear();
+    panels = [];
   }
 
-  function schedule() {
-    if (scheduled) return;
+  function visible(node) {
+    return node.nodeType === 1 && !node.hidden && getComputedStyle(node).display !== 'none';
+  }
+
+  function frameFor(panel, container) {
+    const frame = document.createElement('div');
+    frame.className = 'screen-frame';
+    const content = document.createElement('div');
+    content.className = 'screen-content';
+    if (container) {
+      for (const name of container.classList) {
+        if (!name.startsWith('screen-')) content.classList.add(name);
+      }
+    }
+    frame.append(content);
+    panel.append(frame);
+    return content;
+  }
+
+  function fits(panel) {
+    const frame = panel.querySelector(':scope > .screen-frame');
+    const content = frame.firstElementChild;
+    const style = getComputedStyle(frame);
+    const available = frame.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    return content.getBoundingClientRect().height <= available + 1;
+  }
+
+  function moveId(from, to) {
+    if (!from.id) return;
+    movedIds.set(from, from.id);
+    to.id = from.id;
+    from.removeAttribute('id');
+  }
+
+  function paginate(host, template, container, depth = 0) {
+    remember(host);
+    const children = [...host.childNodes];
+    host.classList.add('screen-flow');
+    let panel = null;
+    let content = null;
+    let firstPanel = null;
+    const make = () => {
+      panel = document.createElement('section');
+      panel.className = `${template} screen-panel`;
+      panel.dataset.density = 'tight';
+      content = frameFor(panel, container);
+      host.append(panel);
+      panels.push(panel);
+      if (!firstPanel?.isConnected) firstPanel = panel;
+    };
+
+    for (const child of children) {
+      if (!visible(child)) continue;
+      if (!panel) make();
+      content.append(child);
+      if (fits(panel)) continue;
+      content.removeChild(child);
+      if (content.childElementCount) {
+        make();
+        content.append(child);
+        if (fits(panel)) continue;
+        content.removeChild(child);
+      }
+      panel.remove();
+      panels.pop();
+      panel = null;
+      content = null;
+
+      // Keep the quiz's delegated listener around both question and result.
+      if (child.matches('.quiz-stage')) {
+        const result = child.querySelector('.quiz-result:not([hidden])');
+        if (result) {
+          remember(child);
+          remember(result.parentElement);
+          child.append(result);
+        }
+      }
+      host.append(child);
+      const descendants = [...child.children].filter(visible);
+      if (descendants.length && depth < 10) {
+        const nested = paginate(child, template, container, depth + 1);
+        if (!firstPanel || !firstPanel.isConnected) firstPanel = nested;
+      } else {
+        make();
+        content.append(child);
+        panel.dataset.fitIssue = fits(panel) ? '' : 'oversize';
+      }
+    }
+    if (firstPanel?.isConnected) moveId(host, firstPanel);
+    return firstPanel;
+  }
+
+  function scene(root) {
+    remember(root);
+    const children = [...root.childNodes];
+    const classes = root.className;
+    const ownContainer = root.matches('.container-wide,.container-narrow') ? root : null;
+    root.classList.add('screen-panel');
+    const content = frameFor(root, ownContainer);
+    content.append(...children);
+    for (const density of ['regular', 'compact', 'tight']) {
+      root.dataset.density = density;
+      if (fits(root)) { panels.push(root); return; }
+    }
+    root.replaceChildren(...children);
+    root.className = `${classes} screen-group`;
+    delete root.dataset.density;
+    const container = root.children.length === 1 && root.firstElementChild.matches('.container-wide,.container-narrow') ? root.firstElementChild : ownContainer;
+    if (container && container !== root) {
+      remember(container);
+      container.classList.add('screen-flow');
+      const first = paginate(container, classes, container);
+      if (first) moveId(root, first);
+    } else {
+      paginate(root, classes, ownContainer);
+    }
+  }
+
+  function refresh(preferred = null) {
+    if (running) return;
+    running = true;
+    const previous = preferred || panels.find(p => {
+      const r = p.getBoundingClientRect();
+      return r.top <= headerElement.getBoundingClientRect().bottom + 30 && r.bottom > window.innerHeight / 2;
+    })?.querySelector('.screen-content > *');
+    document.documentElement.classList.add('screens-layout');
+    restore();
+    const sourceText = [];
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) sourceText.push(walker.currentNode);
+    for (const root of [...main.children]) {
+      if (root.tagName === 'ARTICLE') {
+        remember(root);
+        root.classList.add('screen-flow');
+        for (const part of [...root.children]) scene(part);
+      } else scene(root);
+    }
+    scene(footer);
+    document.documentElement.classList.add('screens-ready');
+    const target = firstLayout && window.location.hash ? document.getElementById(window.location.hash.slice(1)) : previous;
+    firstLayout = false;
+    const destination = target?.isConnected ? target.closest('.screen-panel') || target.querySelector('.screen-panel') : panels[0];
+    const offset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scroll-header-height')) || 0;
+    if (destination) window.scrollTo({ top:Math.max(0, destination.getBoundingClientRect().top + window.scrollY - offset), behavior:'instant' });
+    document.documentElement.classList.remove('screens-layout');
+    document.body.dataset.screenContentPreserved = String(sourceText.every(node => node.isConnected && main.contains(node)));
+    document.body.dataset.screenViewport = `${window.innerWidth}x${window.innerHeight}`;
+    document.body.dataset.screensReady = 'true';
+    running = false;
+  }
+
+  function schedule(preferred = null) {
+    if (preferred?.nodeType === 1) pendingTarget = preferred;
+    if (scheduled || running) return;
     scheduled = true;
-    requestAnimationFrame(update);
+    document.body.dataset.screensReady = 'false';
+    requestAnimationFrame(() => {
+      scheduled = false;
+      const target = pendingTarget;
+      pendingTarget = null;
+      refresh(target);
+    });
   }
-
-  schedule();
-  window.addEventListener('resize', schedule);
-  window.addEventListener('load', schedule, { once: true });
-  main.addEventListener('load', schedule, true);
-  main.addEventListener('toggle', schedule, true);
-  main.addEventListener('click', schedule);
-  if (document.fonts) document.fonts.ready.then(() => { fontsReady = true; schedule(); });
+  window.addEventListener('resize', () => schedule());
+  main.addEventListener('toggle', event => schedule(event.target), true);
+  document.fonts ? document.fonts.ready.then(() => refresh()) : refresh();
+  return { restore, refresh, schedule };
 }
-setupViewportPage();
+screenLayout = setupScreenScenes();
