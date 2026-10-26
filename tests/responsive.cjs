@@ -132,9 +132,26 @@ async function main() {
     }
     const navPage = await browser.newPage({viewport:{width:1440,height:900}});
     await navPage.goto(base + '/', {waitUntil:'load'});
-    for (const [href,label] of [['/about','BRAND'],['/rules','RULES'],['/review','GAME'],
-      ['/highlights','HIGHLIGHTS'],['/blog','BLOG']]) {
-      await navPage.locator('.nav-desktop a[href="' + href + '"]').click();
+    for (const [href,label,subtitle] of [
+      ['/about','BRAND','ZERO ELEVEN 브랜드 스토리'],
+      ['/rules','RULES','축구 규칙 쉽게 배우기'],
+      ['/review','GAME','GOAL / NO GOAL 판정 게임'],
+      ['/highlights','HIGHLIGHTS','경기 관전 포인트 알아보기'],
+      ['/blog','BLOG','축구 규칙과 관전 노트']
+    ]) {
+      const link = navPage.locator('.nav-desktop a[href="' + href + '"]');
+      const panel = link.locator('.nav-hover-panel');
+      await link.hover();
+      await panel.waitFor({state:'visible',timeout:3000});
+      assert.ok((await panel.textContent()).includes(subtitle), label + ' hover caption missing');
+      const panelRect = await panel.boundingBox();
+      assert.ok(panelRect.x >= -1 && panelRect.x + panelRect.width <= 1441, label + ' hover overflows screen');
+      if (href === '/about') await navPage.screenshot({
+        path:path.join(output,'1440-brand-hover-menu.png'),animations:'disabled'
+      });
+      await link.focus();
+      await panel.waitFor({state:'visible',timeout:3000});
+      await link.click();
       assert.equal(new URL(navPage.url()).pathname, href, label + ' links to wrong page');
       assert.equal(await navPage.evaluate(() => window.scrollY), 0, 'Page failed to start at top');
       assert.equal(await navPage.locator('.nav-desktop a[aria-current="page"]').getAttribute('href'), href);
@@ -145,6 +162,9 @@ async function main() {
     await mobile.goto(base + '/', {waitUntil:'load'});
     await mobile.locator('#menuButton').click();
     assert.equal(await mobile.locator('#menuButton').getAttribute('aria-expanded'), 'true');
+    assert.equal(await mobile.locator('#mobileMenu .nav-mobile-copy small').count(), 5);
+    assert.ok((await mobile.locator('#mobileMenu').innerText()).includes('GOAL / NO GOAL 판정 게임'));
+    await mobile.screenshot({path:path.join(output,'390-mobile-subtitle-menu.png'),animations:'disabled'});
     await mobile.locator('#mobileMenu a[href="/review"]').click();
     assert.equal(new URL(mobile.url()).pathname, '/review');
     await mobile.close();
