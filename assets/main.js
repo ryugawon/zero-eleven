@@ -238,10 +238,30 @@ function article() {
     <section class="article-cta"><div class="container-narrow"><div class="article-cta-inner"><span>YOU KNOW THE RULES. NOW MAKE THE CALL.</span><h2>이제 당신이 심판!<br/><em>직접 판정해 볼 차례</em></h2><p>오프사이드의 뜻을 알아봤다면, 이번에는 가상 경기 장면을 보고 직접 판단해 보세요. 정답을 맞히지 못해도 판정 이유를 확인할 수 있습니다.</p><a href="/review" class="button button-yellow" data-event="blog_to_game_click" data-location="blog_end" data-text="이제 당신이 심판! GOAL / NO GOAL 판정하러 가기">이제 당신이 심판! GOAL / NO GOAL 판정하러 가기 <span>→</span></a></div></div></section>
    </article></main>${footer()}`;
 }
+function aboutVideoCta() {
+  return `<section class="about-video-cta" aria-labelledby="about-video-title">
+    <div class="about-video-copy">
+      <span class="about-video-eyebrow">NEXT PLAY / WATCH THE GAME</span>
+      <h2 id="about-video-title">배운 규칙, <em>실제 경기에서</em><br/>확인해 볼까요?</h2>
+      <p>오프사이드부터 VAR 판정까지. 배운 내용을 떠올리며 FIFA 공식 유튜브에서 실제 경기 장면을 찾아보세요.</p>
+    </div>
+    <a class="about-video-thumb" href="${FIFA_VIDEOS_URL}" target="_blank" rel="noopener noreferrer" aria-label="FIFA 공식 유튜브 영상 목록을 새 탭에서 열기" data-event="cta_click" data-location="about_video_thumbnail" data-text="FIFA 공식 영상 썸네일">
+      <img src="/assets/zero-eleven-stadium.webp" alt="축구 경기장 이미지로 만든 ZERO ELEVEN 자체 제작 안내 썸네일. 실제 FIFA 영상 썸네일이 아닙니다." loading="lazy" width="1600" height="900" />
+      <span class="about-video-thumb-kicker" aria-hidden="true">FIFA / OFFICIAL CHANNEL</span>
+      <span class="about-video-play" aria-hidden="true"><span>▶</span></span>
+      <span class="about-video-thumb-foot" aria-hidden="true">WATCH THE MOMENT <span>↗</span></span>
+    </a>
+    <div class="about-video-foot">
+      <div class="about-video-foot-copy"><strong>이제 하이라이트를 보는 눈이 달라질 차례.</strong><span>FIFA 공식 유튜브 동영상 목록이 새 탭으로 열립니다.</span></div>
+      ${outbound('FIFA 공식 하이라이트 보러 가기', 'button button-yellow about-video-button', 'about_video_button', FIFA_VIDEOS_URL)}
+    </div>
+  </section>`;
+}
+
 function about() {
  return `${header('about')}<main id="main">${pageHero('00','THIS IS ZERO ELEVEN','스코어는 그대로.<br/><em>보는 눈은 달라진다.</em>','한 장면을 더 오래 보게 만드는 축구 관전 가이드. 우리는 골 뒤에 숨은 판정의 이유를 이야기합니다.','page-hero-black')}
  <section class="about-statement"><div class="container-wide"><span>WHY WE EXIST / BRAND STORY</span><h2>경기는 <em>90분.</em><br/>궁금증은 <em>1초.</em></h2><div class="about-statement-row"><p>하이라이트를 보다가 누구나 한 번쯤 생각할 수 있어요. “분명 골인데, 왜 취소됐지?” ZERO ELEVEN은 바로 그 질문에서 출발한 학습용 브랜드 기획입니다.</p><p>규칙집을 처음부터 외우지 않아도 괜찮아요. 짧은 설명과 전술 보드, 직접 판정하는 게임을 통해 중요한 기준을 쉽고 정확하게 익힐 수 있도록 설계했어요.</p></div></div></section>
- <section class="about-values"><div class="container-wide">${sectionLead('01','OUR METHOD','보는 눈이 달라지는<br/><em>3개의 과정.</em>')}${actionCards()}</div></section>
+ <section class="about-values"><div class="container-wide">${sectionLead('01','OUR METHOD','보는 눈이 달라지는<br/><em>3개의 과정.</em>')}${actionCards()}${aboutVideoCta()}</div></section>
  <section class="about-name"><div class="container-wide"><div>${eyebrow('02','THE NAME')}<h2>ZERO.<br/><span>ELEVEN.</span></h2></div><div><p><strong>ZERO</strong>는 골처럼 보였지만 인정되지 않은 순간을, <strong>ELEVEN</strong>은 경기장을 누비는 한 팀의 선수 11명을 의미합니다.</p><p>이 이름은 실제 경기 결과나 공인 캠페인을 뜻하지 않아요. 골 취소 이후에도 점수가 변하지 않는 가상 장면에서 출발한 ZERO ELEVEN만의 학습용 콘셉트입니다.</p><a href="/rules" class="button button-yellow">규칙 배우러 가기 <span>↗</span></a></div></div></section>
  <section class="about-disclaimer"><div class="container-wide"><span>ABOUT THIS PROJECT</span><h2>공식 대회 페이지가 아닙니다.</h2><p>${disclaimer} 실제 경기를 사칭하지 않고, 규칙 근거는 IFAB 공식 사이트와 연결합니다.</p></div></section>
  </main>${footer()}`;
