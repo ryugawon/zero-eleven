@@ -546,7 +546,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline:3px solid
  .brand-symbol span { width:11px; height:11px; }
  .brand-symbol b { font-size:18px; }
  .nav-youtube { display:none; }
- .menu-button { width:39px; height:39px; }
+ .menu-button { width:48px; height:48px; flex-shrink:0; }
  .button { width:100%; min-height:60px; padding:17px; gap:15px; font-size:14px; }
  .section-lead { margin-bottom:33px; }
  .section-lead h2 { margin:16px 0; font-size:clamp(40px,9vw,59px); }
