@@ -752,3 +752,38 @@ body[data-route="/"] .nav-youtube { border-radius:8px; padding:15px 20px; }
  .stadium-hero-main { padding-top:143px; }
  .stadium-hero-buttons a { font-size:11px; }
 }
+
+/* Layout consistency and small-screen overflow safeguards.
+   Route-specific HOME selectors apply only after main.js sets data-route. */
+.page-hero h1,
+.section-lead h2,
+.about-statement h2,
+.about-name h2,
+.article-hero h1,
+.featured-details h2,
+.watch-card h3 { overflow-wrap:break-word; }
+.action-card, .editorial-card, .featured-story > *,
+.about-name > .container-wide > *,
+.rules-explainer > .container-wide > *,
+.watch-card > *, .about-video-cta { min-width:0; }
+@media (min-width:701px) and (max-width:980px) {
+ .about-values .action-card h2 { font-size:clamp(34px,5vw,59px); }
+ .about-values .action-card { padding:18px; }
+ .about-video-cta { margin-top:55px; }
+}
+@media (max-width:700px) {
+ .about-statement h2 { font-size:clamp(41px,10.5vw,73px); line-height:1.13; }
+ .about-name h2 { font-size:clamp(42px,12vw,82px); }
+ .page-hero h1 { overflow-wrap:anywhere; }
+ .page-hero-inner { min-width:0; }
+ .footer-logo { font-size:clamp(42px,11.5vw,80px); }
+ .blog-list-section .featured-details .button { max-width:100%; white-space:normal; }
+ .article-cta .button { white-space:normal; text-align:left; }
+ .about-video-button { white-space:normal; text-align:center; }
+}
+@media (max-width:390px) {
+ .stadium-logo-display { font-size:clamp(31px,10vw,38px); }
+ .stadium-hero-buttons { flex-direction:column; align-items:stretch; }
+ .stadium-hero-buttons a { width:100%; }
+ .stadium-triple a { padding-inline:3px; }
+}
