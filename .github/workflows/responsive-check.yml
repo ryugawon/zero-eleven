@@ -1,0 +1,32 @@
+name: ZERO ELEVEN responsive checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Test route rendering
+        run: node --test tests/routing.cjs
+      - name: Capture and verify responsive layouts
+        run: node tests/responsive.cjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zero-eleven-responsive-screenshots
+          path: artifacts/responsive-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
