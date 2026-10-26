@@ -297,6 +297,9 @@ function notFound() {
 // Vercel serves index.html for every page, so its data-route is always '/'.
 // Select the page from the requested URL instead of the shared HTML template.
 const cleanPath = window.location.pathname.replace(/\/+$/, '') || '/';
+// The shared Vercel index.html starts with data-route="/". Correct it before
+// rendering so home-only header/stadium styles never leak into interior pages.
+document.body.dataset.route = cleanPath;
 const key = cleanPath === '/' ? 'home' : cleanPath === '/blog' ? 'blog' : cleanPath === '/blog/offside-goal' ? 'article' : cleanPath === '/rules' ? 'rules' : cleanPath === '/review' ? 'review' : cleanPath === '/about' ? 'about' : cleanPath === '/highlights' ? 'highlights' : '404';
 const pages = { home, blog, article, rules, review, about, highlights, '404': notFound };
 const app = document.querySelector('#app');
