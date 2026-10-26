@@ -82,13 +82,20 @@ function outbound(label, cls = '', location = 'generic', destination = FIFA_URL)
 function eyebrow(index, title, inverse = false) {
   return `<div class="eyebrow ${inverse ? 'eyebrow-inverse' : ''}"><span class="eyebrow-line"></span><span>${index} &nbsp;/&nbsp; ${title}</span></div>`;
 }
+function pageGuide(kind = 'interior') {
+  const currentPath = document.body.dataset.route === '/blog/offside-goal' ? '/blog' : document.body.dataset.route;
+  return `<nav class="page-guide ${kind === 'home' ? 'page-guide-home container-wide' : kind === 'article' ? 'page-guide-article' : 'page-guide-interior'}" aria-label="페이지 소제목 바로가기">
+    ${routes.map((r, i) => `<a class="page-guide-link" href="${r.href}" ${r.href === currentPath ? 'aria-current="page"' : ''} data-event="page_guide_click" data-step="${r.key}"><span class="page-guide-no">0${i + 1} / ${r.label}</span><span class="page-guide-subtitle">${r.subtitle}</span><span class="page-guide-arrow" aria-hidden="true">↗</span></a>`).join('')}
+  </nav>`;
+}
+
 function header(key) {
   return `<a class="skip-link" href="#main">본문 바로가기</a>
   <header class="site-header" id="siteHeader">
     <div class="topline"><span>ZERO ELEVEN / THE FOOTBALL PLAYBOOK</span><span class="topline-right"><i class="live-dot"></i> LEARN THE RULE. LOVE THE GAME.</span></div>
     <div class="nav-wrap container-wide">
       <a class="brand" href="/" aria-label="ZERO ELEVEN 홈으로 이동"><span class="brand-symbol"><span></span><b>11</b></span><span class="brand-name">ZERO<span>ELEVEN</span></span></a>
-      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<a ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${r.key === key || (key === 'article' && r.key === 'blog') ? 'selected' : ''}" aria-describedby="nav-subtitle-${r.key}"><span class="nav-link-label">${r.label}</span><span class="nav-hover-panel" id="nav-subtitle-${r.key}"><span class="nav-hover-title">${r.label} / ZERO ELEVEN</span><span class="nav-hover-copy">${r.subtitle}</span><span class="nav-hover-arrow" aria-hidden="true">↗</span></span></a>`).join('')}</nav>
+      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<a ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${r.key === key || (key === 'article' && r.key === 'blog') ? 'selected' : ''}" aria-describedby="nav-subtitle-${r.key}"><span class="nav-link-label">${r.label}</span><span class="nav-link-subtitle">${r.subtitle}</span><span class="nav-hover-panel" id="nav-subtitle-${r.key}"><span class="nav-hover-title">${r.label} / ZERO ELEVEN</span><span class="nav-hover-copy">${r.subtitle}</span><span class="nav-hover-arrow" aria-hidden="true">↗</span></span></a>`).join('')}</nav>
       <div class="nav-actions">${outbound('FIFA YOUTUBE', 'nav-youtube', 'header', FIFA_URL)}<button type="button" class="menu-button" id="menuButton" aria-controls="mobileMenu" aria-expanded="false" aria-label="메뉴 열기"><span></span><span></span></button></div>
     </div>
     <nav class="nav-mobile" id="mobileMenu" aria-label="모바일 메뉴" hidden>${routes.map(r => `<a href="${r.href}" ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''}><span class="nav-mobile-copy"><strong>${r.label}</strong><small>${r.subtitle}</small></span><span class="nav-mobile-arrow" aria-hidden="true">↗</span></a>`).join('')}</nav>
@@ -194,6 +201,7 @@ function home() {
         <span class="stadium-scroll-indicator" aria-hidden="true"><span></span></span>
       </div>
     </section>
+    ${pageGuide('home')}
     <section class="action-section"><div class="container-wide"><div class="action-intro"><span>01 — YOUR PLAYBOOK</span><p>축구를 보는 방식을 바꾸는 <strong>3가지 스텝.</strong></p></div>${actionCards()}</div></section>
     <section class="manifesto-section"><div class="container-wide"><span class="section-watermark">THE PLAY IS NOT OVER</span>${sectionLead('02', 'THE BIG QUESTION', '골이 취소되는 그 순간,<br/><em>무슨 일이 있었을까?</em>', '공격수가 앞에 있었다고 무조건 오프사이드일까? VAR은 모든 판정을 뒤집을까? 중요한 건 장면을 보는 기준이야.')}${rulesTabs()}</div></section>
     <section class="quiz-section" id="quick-check"><div class="container-wide"><div class="quiz-title-row"><div>${eyebrow('03', 'YOUR CALL / GAME')}<h2>이번엔 네가 <span>심판</span>이야.</h2></div><p>정답을 보기 전에 직접 결정해 봐.<br/>이 판정, GOAL? NO GOAL?</p></div>${renderQuiz('mini')}<div class="quiz-more"><span>MORE THAN ONE WAY TO SEE THE GAME.</span><a href="/review" class="text-link-light">전체 판정 게임 도전하기 <span>↗</span></a></div></div></section>
@@ -206,7 +214,7 @@ function home() {
   </main>${footer()}`;
 }
 function pageHero(index, kicker, title, text, variant = '') {
-  return `<section class="page-hero ${variant}"><div class="container-wide page-hero-inner">${eyebrow(index, kicker, true)}<h1>${title}</h1><p>${text}</p><div class="page-hero-footer"><span>ZERO ELEVEN / THE FOOTBALL PLAYBOOK</span><span>2026 — EDUCATIONAL PROJECT</span></div></div></section>`;
+  return `<section class="page-hero ${variant}"><div class="container-wide page-hero-inner">${eyebrow(index, kicker, true)}<h1>${title}</h1><p>${text}</p>${pageGuide('interior')}<div class="page-hero-footer"><span>ZERO ELEVEN / THE FOOTBALL PLAYBOOK</span><span>2026 — EDUCATIONAL PROJECT</span></div></div></section>`;
 }
 function blog() {
   return `${header('blog')}<main id="main">${pageHero('BLOG', 'ZERO ELEVEN BLOG', '축구를 더 재미있게 보는<br/><em>짧고 정확한 노트.</em>', '규칙이 어려웠던 순간을 쉬운 말과 그림으로 다시 설명합니다.', 'page-hero-yellow')}
@@ -221,7 +229,7 @@ function articleFigure(src, alt, number, title, caption) {
 }
 function article() {
   return `${header('article')}<main id="main"><article>
-    <header class="article-hero"><div class="container-narrow"><a href="/blog" class="article-back">← ZERO ELEVEN BLOG / 블로그 목록</a><div class="article-meta"><span>THE RULES BEHIND THE GOAL</span><span>2026.10.23</span><span>5 MIN READ</span></div><h1>골은 들어갔는데,<br/>득점은 무효? <span>오프사이드로 골이 취소되는 이유</span></h1><p class="article-lead">공이 골망을 흔들었는데 점수판은 그대로일 때가 있습니다. 골이 들어가기 전에 오프사이드 반칙이 있었다면 득점이 인정되지 않을 수 있기 때문입니다. 다만 공격수가 수비수보다 앞에 서 있었다는 이유만으로 곧바로 반칙이 되는 것은 아닙니다. <strong>동료가 공을 플레이하거나 터치한 순간의 위치와 이후 실제 플레이 관여 여부</strong>를 함께 판단해야 합니다.</p><div class="article-author"><span class="author-monogram">11</span><div><b>ZERO ELEVEN EDITORIAL</b><span>FOOTBALL RULES / LEARNING GUIDE</span></div></div></div></header>
+    <header class="article-hero"><div class="container-narrow"><a href="/blog" class="article-back">← ZERO ELEVEN BLOG / 블로그 목록</a><div class="article-meta"><span>THE RULES BEHIND THE GOAL</span><span>2026.10.23</span><span>5 MIN READ</span></div><h1>골은 들어갔는데,<br/>득점은 무효? <span>오프사이드로 골이 취소되는 이유</span></h1><p class="article-lead">공이 골망을 흔들었는데 점수판은 그대로일 때가 있습니다. 골이 들어가기 전에 오프사이드 반칙이 있었다면 득점이 인정되지 않을 수 있기 때문입니다. 다만 공격수가 수비수보다 앞에 서 있었다는 이유만으로 곧바로 반칙이 되는 것은 아닙니다. <strong>동료가 공을 플레이하거나 터치한 순간의 위치와 이후 실제 플레이 관여 여부</strong>를 함께 판단해야 합니다.</p><div class="article-author"><span class="author-monogram">11</span><div><b>ZERO ELEVEN EDITORIAL</b><span>FOOTBALL RULES / LEARNING GUIDE</span></div></div>${pageGuide('article')}</div></header>
     <div class="article-cover container-wide">${articleFigure('/assets/goal-sequence.svg','2:1에서 동점골처럼 보인 뒤 오프사이드로 다시 2:1을 유지하는 가상 스코어보드','01','골망은 흔들렸는데, 점수는 그대로?','실제 경기 사진이 아닌 ZERO ELEVEN 자체 제작 가상 장면입니다. 골을 넣었어도 오프사이드 반칙이 확인되면 득점이 인정되지 않을 수 있습니다.')}</div>
     <div class="container-narrow article-body"><div class="article-toc"><span>ON THIS PAGE</span><nav aria-label="글 목차"><a href="#offside">01 오프사이드란?</a><a href="#fictional-goal">02 골 취소 가상 사례</a><a href="#video-review">03 비디오 판독(VAR)</a><a href="#watching-tips">04 관전 포인트</a><a href="#article-faq">05 자주 묻는 질문</a></nav></div>
     <section id="offside"><span class="article-section-index">01 / THE RULE</span><h2>오프사이드란? <span>위치와 반칙은 다릅니다</span></h2><p>국제축구평의회(IFAB) 경기규칙 제11조에 따르면 오프사이드 위치에 있는 것 자체는 반칙이 아닙니다. 선수가 상대 팀 진영에서 공과 끝에서 두 번째 상대 선수보다 상대 골라인에 더 가까이 있는지 등 위치 조건을 먼저 살핍니다. 이때 팔과 손은 위치 판단에 포함하지 않습니다. 그 위치에서 동료의 공을 플레이하거나 상대 선수의 플레이를 방해하는 등 규정된 방식으로 관여해야 반칙이 성립합니다.</p><p>그래서 관전할 때는 '선수가 앞에 있나?'에서 멈추지 말고, <strong>'언제 패스했나?'와 '그 선수가 플레이에 관여했나?'</strong>를 차례로 확인해야 합니다.</p><div class="article-note"><span>REMEMBER THIS / KEY RULE</span><strong>위치만 앞섰다 = 자동 반칙 ❌<br/>오프사이드 위치 + 규정상 플레이 관여 = 반칙 가능 ⭕</strong><p>출처: <a href="${OFFSIDE_URL}" target="_blank" rel="noopener noreferrer">IFAB 경기규칙 제11조 ↗</a></p></div></section>
