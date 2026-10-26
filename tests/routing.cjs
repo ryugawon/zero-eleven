@@ -80,3 +80,22 @@ test('HOME-specific layout styles are isolated from other routes', () => {
   assert.equal(render('/highlights', true).route, '/highlights');
   assert.equal(render('/blog', true).route, '/blog');
 });
+
+test('all pages show five clickable route subtitles with correct destinations', () => {
+  const expected = [
+    ['/about','ZERO ELEVEN 브랜드 스토리'],
+    ['/rules','축구 규칙 쉽게 배우기'],
+    ['/review','GOAL / NO GOAL 판정 게임'],
+    ['/highlights','경기 관전 포인트 알아보기'],
+    ['/blog','축구 규칙과 관전 노트']
+  ];
+  for (const url of Object.keys(pages)) {
+    const html = render(url);
+    assert.equal((html.match(/class="page-guide-link"/g) || []).length, expected.length, url);
+    assert.equal((html.match(/class="nav-link-subtitle"/g) || []).length, expected.length, url);
+    for (const [href,subtitle] of expected) {
+      assert.ok(html.includes('href="' + href + '"'), url + ' -> ' + href);
+      assert.ok(html.includes(subtitle), subtitle);
+    }
+  }
+});
