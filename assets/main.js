@@ -304,6 +304,9 @@ const key = cleanPath === '/' ? 'home' : cleanPath === '/blog' ? 'blog' : cleanP
 const pages = { home, blog, article, rules, review, about, highlights, '404': notFound };
 const app = document.querySelector('#app');
 app.innerHTML = pages[key]();
+// The website uses full document navigations. On a new route, start at the top.
+// Preserve explicit in-page anchors, such as article table-of-contents links.
+if (!window.location.hash && typeof window.scrollTo === 'function') window.scrollTo(0, 0);
 
 document.querySelectorAll('[data-event]').forEach(el => {
   el.addEventListener('click', () => {
