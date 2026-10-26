@@ -10,15 +10,17 @@ const templateRoute = template.match(/data-route="([^"]*)"/)[1];
 
 function render(pathname) {
   const app = { innerHTML: '' };
+  const body = { dataset: { route: templateRoute } };
   vm.runInNewContext(source, {
     window: { location: { pathname, origin: 'https://example.com' } },
     document: {
-      body: { dataset: { route: templateRoute } },
+      body,
       querySelector: selector => selector === '#app' ? app : null,
       querySelectorAll: () => [],
       getElementById: () => null,
     },
   });
+  assert.equal(body.dataset.route, pathname.replace(/\/+$/, '') || '/');
   return app.innerHTML;
 }
 
@@ -51,4 +53,15 @@ for (const [url, marker] of Object.entries(pages)) {
 
 test('unknown paths display the missing-page screen', () => {
   assert.ok(render('/missing-page').includes('404 / NOT FOUND'));
+});
+
+test('every navigation section points to an existing page and section', () => {
+  const html = render('/');
+  const links = [...html.matchAll(/href="(\/[^\"]*#[^\"]+)"/g)];
+  assert.ok(links.length >= 12);
+  for (const [, destination] of links) {
+    const [url, id] = destination.split('#');
+    assert.ok(Object.hasOwn(pages, url), destination);
+    assert.ok(render(url).includes(`id="${id}"`), destination);
+  }
 });
