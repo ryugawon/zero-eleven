@@ -9,11 +9,11 @@ const FIFA_VIDEOS_URL = 'https://www.youtube.com/@fifa/videos';
 const disclaimer = '본 페이지는 수업 실습을 위해 제작한 학습용 기획물입니다. 공식 대회·협회·선수의 운영 페이지가 아닙니다.';
 
 const routes = [
-  { label: 'BRAND', href: '/about', key: 'about' },
-  { label: 'RULES', href: '/rules', key: 'rules' },
-  { label: 'GAME', href: '/review', key: 'review' },
-  { label: 'HIGHLIGHTS', href: '/highlights', key: 'highlights' },
-  { label: 'BLOG', href: '/blog', key: 'blog' },
+  { label: 'BRAND', href: '/about', key: 'about', subtitle: 'ZERO ELEVEN 브랜드 스토리' },
+  { label: 'RULES', href: '/rules', key: 'rules', subtitle: '축구 규칙 쉽게 배우기' },
+  { label: 'GAME', href: '/review', key: 'review', subtitle: 'GOAL / NO GOAL 판정 게임' },
+  { label: 'HIGHLIGHTS', href: '/highlights', key: 'highlights', subtitle: '경기 관전 포인트 알아보기' },
+  { label: 'BLOG', href: '/blog', key: 'blog', subtitle: '축구 규칙과 관전 노트' },
 ];
 
 const scenarios = [
@@ -88,10 +88,10 @@ function header(key) {
     <div class="topline"><span>ZERO ELEVEN / THE FOOTBALL PLAYBOOK</span><span class="topline-right"><i class="live-dot"></i> LEARN THE RULE. LOVE THE GAME.</span></div>
     <div class="nav-wrap container-wide">
       <a class="brand" href="/" aria-label="ZERO ELEVEN 홈으로 이동"><span class="brand-symbol"><span></span><b>11</b></span><span class="brand-name">ZERO<span>ELEVEN</span></span></a>
-      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<a ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${r.key === key || (key === 'article' && r.key === 'blog') ? 'selected' : ''}">${r.label}</a>`).join('')}</nav>
+      <nav class="nav-desktop" aria-label="주 메뉴">${routes.map(r => `<a ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''} href="${r.href}" class="nav-link ${r.key === key || (key === 'article' && r.key === 'blog') ? 'selected' : ''}" aria-describedby="nav-subtitle-${r.key}"><span class="nav-link-label">${r.label}</span><span class="nav-hover-panel" id="nav-subtitle-${r.key}"><span class="nav-hover-title">${r.label} / ZERO ELEVEN</span><span class="nav-hover-copy">${r.subtitle}</span><span class="nav-hover-arrow" aria-hidden="true">↗</span></span></a>`).join('')}</nav>
       <div class="nav-actions">${outbound('FIFA YOUTUBE', 'nav-youtube', 'header', FIFA_URL)}<button type="button" class="menu-button" id="menuButton" aria-controls="mobileMenu" aria-expanded="false" aria-label="메뉴 열기"><span></span><span></span></button></div>
     </div>
-    <nav class="nav-mobile" id="mobileMenu" aria-label="모바일 메뉴" hidden>${routes.map(r => `<a href="${r.href}" ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''}>${r.label}<span>↗</span></a>`).join('')}</nav>
+    <nav class="nav-mobile" id="mobileMenu" aria-label="모바일 메뉴" hidden>${routes.map(r => `<a href="${r.href}" ${r.key === key || (key === 'article' && r.key === 'blog') ? 'aria-current="page"' : ''}><span class="nav-mobile-copy"><strong>${r.label}</strong><small>${r.subtitle}</small></span><span class="nav-mobile-arrow" aria-hidden="true">↗</span></a>`).join('')}</nav>
   </header>`;
 }
 function footer() {
