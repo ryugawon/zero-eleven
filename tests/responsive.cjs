@@ -94,6 +94,37 @@ async function main() {
               touch,brokenImages,
             };
           });
+          // Every page uses the same clickable top navigation and descriptive subtitles.
+          if (width >= 1101) {
+            const menuInfo = await page.evaluate(() => {
+              const nav = document.querySelector('.nav-desktop');
+              const actions = document.querySelector('.nav-actions');
+              const links = [...nav.querySelectorAll('.nav-link')];
+              const rect = n => n.getBoundingClientRect();
+              return {
+                visible: getComputedStyle(nav).display !== 'none',
+                count: links.length,
+                subtitles: links.map(l => ({
+                  label:l.querySelector('.nav-link-label')?.textContent,
+                  subtitle:l.querySelector('.nav-link-subtitle')?.textContent,
+                  visible:getComputedStyle(l.querySelector('.nav-link-subtitle')).display !== 'none',
+                  href:l.getAttribute('href'),
+                  right:rect(l).right
+                })),
+                lastLinkRight:Math.max(...links.map(l => rect(l).right)),
+                actionLeft:rect(actions).left
+              };
+            });
+            assert.ok(menuInfo.visible, 'Desktop menu should be visible at ' + width);
+            assert.equal(menuInfo.count, 5, 'All top links must be present');
+            assert.ok(menuInfo.lastLinkRight <= menuInfo.actionLeft + 1,
+              'Top links overlap the YouTube button: ' + JSON.stringify(menuInfo));
+            const hrefs = ['/about','/rules','/review','/highlights','/blog'];
+            menuInfo.subtitles.forEach((item,i) => {
+              assert.equal(item.href, hrefs[i], 'Wrong page target');
+              assert.ok(item.visible && item.subtitle?.length > 4, 'Subtitle missing: ' + item.label);
+            });
+          }
           assert.equal(check.route, route, 'Incorrect CSS page scope');
           assert.ok(check.text.includes(markers[route]), 'Missing page content');
           assert.ok(check.scrollWidth <= check.viewport + 1,
@@ -151,7 +182,9 @@ async function main() {
       });
       await link.focus();
       await panel.waitFor({state:'visible',timeout:3000});
-      await link.click();
+      const caption = link.locator('.nav-link-subtitle');
+      assert.equal(await caption.innerText(), subtitle);
+      await caption.click();
       assert.equal(new URL(navPage.url()).pathname, href, label + ' links to wrong page');
       assert.equal(await navPage.evaluate(() => window.scrollY), 0, 'Page failed to start at top');
       assert.equal(await navPage.locator('.nav-desktop a[aria-current="page"]').getAttribute('href'), href);
