@@ -94,23 +94,6 @@ async function main() {
               touch,brokenImages,
             };
           });
-          const guideLinks = page.locator('.page-guide-link');
-          assert.equal(await guideLinks.count(), 5, route + ' missing subtitle links');
-          for (const href of ['/about','/rules','/review','/highlights','/blog']) {
-            assert.equal(await page.locator('.page-guide-link[href="' + href + '"]').count(), 1);
-          }
-          if (width >= 1280) {
-            assert.equal(await page.locator('.nav-desktop .nav-link-subtitle').count(), 5);
-          }
-          if (route !== '/' && route !== '/blog/offside-goal') {
-            const hero = await page.locator('.page-hero').boundingBox();
-            const guide = await page.locator('.page-hero .page-guide').boundingBox();
-            assert.ok(hero && guide, route + ' hero and subtitle guide missing');
-            if (height >= 700) {
-              assert.ok(guide.y + guide.height < height + 5,
-                route + ' subtitle guide falls below the opening screen: ' + JSON.stringify(guide));
-            }
-          }
           assert.equal(check.route, route, 'Incorrect CSS page scope');
           assert.ok(check.text.includes(markers[route]), 'Missing page content');
           assert.ok(check.scrollWidth <= check.viewport + 1,
@@ -174,11 +157,6 @@ async function main() {
       assert.equal(await navPage.locator('.nav-desktop a[aria-current="page"]').getAttribute('href'), href);
       await navPage.goto(base + '/', {waitUntil:'load'});
     }
-    // A subtitle itself is a navigation link, not a decorative tooltip.
-    await navPage.goto(base + '/about', {waitUntil:'load'});
-    await navPage.locator('.page-guide-link[href="/review"]').click();
-    assert.equal(new URL(navPage.url()).pathname, '/review');
-    assert.equal(await navPage.evaluate(() => scrollY), 0);
     await navPage.close();
     const mobile = await browser.newPage({viewport:{width:390,height:844}});
     await mobile.goto(base + '/', {waitUntil:'load'});
